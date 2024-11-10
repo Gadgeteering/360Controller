@@ -20,9 +20,9 @@
  along with Foobar; if not, write to the Free Software
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
-#include <IOKit/usb/IOUSBDevice.h>
-#include <IOKit/usb/IOUSBInterface.h>
+#import <IOKit/usb/IOUSBHostDevice.h>
+#import <IOKit/hid/IOHIDDevice.h>
+#import <IOKitLib.h>
 #include "Controller.h"
 namespace HID_360 {
 #include "xbox360hid.h"
@@ -42,7 +42,7 @@ static Xbox360Peripheral* GetOwner(IOService *us)
 	return OSDynamicCast(Xbox360Peripheral, prov);
 }
 
-static IOUSBDevice* GetOwnerProvider(const IOService *us)
+static IOUSBHostDevice* GetOwnerProvider(const IOService *us)
 {
 	IOService *prov = us->getProvider(), *provprov;
 
@@ -51,7 +51,7 @@ static IOUSBDevice* GetOwnerProvider(const IOService *us)
 	provprov = prov->getProvider();
 	if (provprov == NULL)
 		return NULL;
-	return OSDynamicCast(IOUSBDevice, provprov);
+	return OSDynamicCast(IOUSBHostDevice, provprov);
 }
 
 bool Xbox360ControllerClass::start(IOService *provider)
@@ -72,7 +72,7 @@ IOReturn Xbox360ControllerClass::setProperties(OSObject *properties)
 // Returns the HID descriptor for this device
 IOReturn Xbox360ControllerClass::newReportDescriptor(IOMemoryDescriptor **descriptor) const
 {
-    IOBufferMemoryDescriptor *buffer = IOBufferMemoryDescriptor::inTaskWithOptions(kernel_task,0,sizeof(HID_360::ReportDescriptor));
+    IOBufferMemoryDescriptor *buffer = IOBufferMemoryDescriptor::inTaskWithOptions(kernel_task,kIODirectionOut,sizeof(HID_360::ReportDescriptor));
 
     if (buffer == NULL) return kIOReturnNoResources;
     buffer->writeBytes(0,HID_360::ReportDescriptor,sizeof(HID_360::ReportDescriptor));
